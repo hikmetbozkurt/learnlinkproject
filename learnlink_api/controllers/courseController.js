@@ -9,10 +9,13 @@ export const getAllCourses = asyncHandler(async (req, res) => {
         c.*,
         u.name as instructor_name,
         CASE WHEN c.instructor_id = $1 THEN true ELSE false END as is_admin,
-        CASE WHEN e.user_id IS NOT NULL THEN true ELSE false END as is_enrolled
+        CASE WHEN e.user_id IS NOT NULL THEN true ELSE false END as is_enrolled,
+        c.student_count,
+        c.max_students
       FROM courses c
       JOIN users u ON c.instructor_id = u.user_id
       LEFT JOIN enrollments e ON c.course_id = e.course_id AND e.user_id = $1
+      ORDER BY c.course_id
     `, [req.user.user_id]);
 
     console.log('All courses:', result.rows);
@@ -222,5 +225,46 @@ export const joinCourse = asyncHandler(async (req, res) => {
   } catch (error) {
     console.error('Error joining course:', error);
     res.status(500).json({ message: 'Failed to join course' });
+  }
+});
+
+export const getCourseEnrollmentStats = asyncHandler(async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        u.user_id,
+        COUNT(DISTINCT e.course_id) as enrolled_courses,
+        ARRAY_AGG(DISTINCT e.course_id) as course_ids
+      FROM users u
+      LEFT JOIN enrollments e ON u.user_id = e.user_id
+      GROUP BY u.user_id
+      ORDER BY u.user_id
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching course enrollment stats:', error);
+    res.status(500).json({ message: 'Failed to fetch course enrollment statistics' });
+  }
+});
+
+export const getCourseStats = asyncHandler(async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        c.course_id,
+        c.title,
+        c.student_count,
+        c.max_students,
+        u.name as instructor_name
+      FROM courses c
+      JOIN users u ON c.instructor_id = u.user_id
+      ORDER BY c.course_id
+    `);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching course statistics:', error);
+    res.status(500).json({ message: 'Failed to fetch course statistics' });
   }
 });
