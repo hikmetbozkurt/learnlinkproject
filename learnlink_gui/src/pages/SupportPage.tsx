@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, RefObject } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import '../styles/pages/shared.css';
 import '../styles/pages/support.css';
 import { FaQuestionCircle, FaBookOpen, FaEnvelope, FaBook } from 'react-icons/fa';
@@ -10,17 +10,6 @@ const SupportPage = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const supportBarRefs = useRef<Array<HTMLDivElement | null>>([]);
 
-  useEffect(() => {
-    if (hoveredIndex !== null && supportBarRefs.current[hoveredIndex]) {
-      const element = supportBarRefs.current[hoveredIndex];
-      if (element) {
-        const buffer = 20; // Extra space for visual comfort
-        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        window.scrollBy(0, buffer); // Add a little extra space at the top
-      }
-    }
-  }, [hoveredIndex]);
-
   const setRef = (el: HTMLDivElement | null, index: number) => {
     supportBarRefs.current[index] = el;
   };
@@ -29,7 +18,7 @@ const SupportPage = () => {
     {
       icon: <FaBook />,
       title: 'How to use LearnLink',
-      description: 'Get started with a comprehensive guide on how to use LearnLink effectively.',
+      description: 'LearnLink provides an intuitive platform for students and teachers to manage courses, communicate, and collaborate effectively. This guide walks you through the essential features to help you get started.',
       link: '/guide',
       details: [
         'Learn navigation basics',
@@ -41,7 +30,7 @@ const SupportPage = () => {
     {
       icon: <FaQuestionCircle />,
       title: 'FAQ',
-      description: 'Find answers to commonly asked questions about LearnLink features and services.',
+      description: "Have questions? Find quick answers about LearnLink's key features, troubleshooting steps, and common user inquiries to enhance your experience.",
       link: '/faq',
       details: [
         'Common questions answered',
@@ -51,31 +40,14 @@ const SupportPage = () => {
       ]
     },
     {
-      icon: <FaBookOpen />,
-      title: 'Frequently Used Resources',
-      description: 'Access popular tools, guides, and learning materials to enhance your experience.',
-      details: [
-        'Popular learning materials',
-        'Useful tools and templates',
-        'Study guides',
-        'Resource library'
-      ]
-    },
-    {
       icon: <FaEnvelope />,
       title: 'Contact for Help',
-      description: 'Need additional support? Reach out to our dedicated support team for assistance.',
-      details: [
-        'Contact support team',
-        'Submit a ticket',
-        'Live chat support',
-        'Email assistance'
-      ]
+      description: 'For any issues or inquiries, email us at admin@admin.com.'
     }
   ];
 
   const handleCategoryClick = (index: number) => {
-    const category = supportCategories[index];
+    const category = supportCategories[index]; 
     if (!category.link) {
       showToast(`Feature coming soon!`, 'success');
     }
@@ -89,7 +61,7 @@ const SupportPage = () => {
         <p className="page-description">We're here to help and answer any question you might have</p>
       </div>
 
-      <div className="support-list">
+      <div className="support-list" style={{ overflowY: 'auto', maxHeight: '80vh' }}>
         {supportCategories.map((category, index) => (
           <div 
             key={index} 
@@ -107,10 +79,10 @@ const SupportPage = () => {
                 <p>{category.description}</p>
               </div>
             </Link>
-            {hoveredIndex === index && (
+            {hoveredIndex === index && category.details && (
               <div className="support-details-dropdown">
                 <ul>
-                  {category.details.map((detail, idx) => (
+                  {category.details.map((detail: string, idx: number) => (
                     <li key={idx}>{detail}</li>
                   ))}
                 </ul>
